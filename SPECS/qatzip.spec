@@ -5,15 +5,15 @@
 
 Name:           qatzip
 Version:        1.1.2
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Intel QuickAssist Technology (QAT) QATzip Library
-License:        BSD
+License:        BSD-3-Clause
 URL:            https://github.com/intel/%{githubname}
 Source0:        %{url}/archive/%{version}/%{name}-%{version}.tar.gz
 
 BuildRequires:  gcc >= 4.8.5
 BuildRequires:  zlib-devel >= 1.2.7
-BuildRequires:  qatlib-devel >= 22.07.0
+BuildRequires:  qatlib-devel >= 23.08.0
 BuildRequires:  autoconf automake libtool make lz4-devel
 # The purpose of the package is to support hardware that only exists on x86_64 platforms
 # https://bugzilla.redhat.com/show_bug.cgi?id=1987280
@@ -46,7 +46,7 @@ This package contains headers and libraries required to build
 applications that use the QATzip APIs.
 
 %prep
-%autosetup -p0 -n %{githubname}-%{version}
+%autosetup -n %{githubname}-%{version}
 
 %build
 %set_build_flags
@@ -86,8 +86,11 @@ rm -vf %{buildroot}%{_mandir}/*.pdf
 %{_libdir}/pkgconfig/*.pc
 
 %changelog
+* Mon Nov 20 2023 Vladis Dronov <vdronov@redhat.com> - 1.1.2-2
+- Rebuild qatzip 1.1.2 for qatlib 23.11 (RHEL-15637)
+
 * Wed Mar 29 2023 Vladis Dronov <vdronov@redhat.com> - 1.1.2-1
-- Update to qatzip 1.1.2 (bz 2178765)
+- Update to qatzip 1.1.2 (bz 2082439)
 - Update README, update driver configure files
 - Fix some bugs
 - Add support for pkgconfig
