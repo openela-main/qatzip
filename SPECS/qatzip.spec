@@ -5,7 +5,7 @@
 
 Name:           qatzip
 Version:        1.1.2
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Intel QuickAssist Technology (QAT) QATzip Library
 License:        BSD-3-Clause
 URL:            https://github.com/intel/%{githubname}
@@ -18,6 +18,8 @@ BuildRequires:  autoconf automake libtool make lz4-devel
 # The purpose of the package is to support hardware that only exists on x86_64 platforms
 # https://bugzilla.redhat.com/show_bug.cgi?id=1987280
 ExclusiveArch:  x86_64
+
+Patch1:         qatapp-32528-fix-large-files.patch
 
 %description
 QATzip is a user space library which builds on top of the Intel
@@ -46,7 +48,7 @@ This package contains headers and libraries required to build
 applications that use the QATzip APIs.
 
 %prep
-%autosetup -n %{githubname}-%{version}
+%autosetup -p1 -n %{githubname}-%{version}
 
 %build
 %set_build_flags
@@ -86,6 +88,9 @@ rm -vf %{buildroot}%{_mandir}/*.pdf
 %{_libdir}/pkgconfig/*.pc
 
 %changelog
+* Mon Apr 07 2025 Vladis Dronov <vdronov@redhat.com> - 1.1.2-3
+- Fix large files decompression bug QATAPP-32528 (RHEL-35325)
+
 * Mon Nov 20 2023 Vladis Dronov <vdronov@redhat.com> - 1.1.2-2
 - Rebuild qatzip 1.1.2 for qatlib 23.11 (RHEL-15637)
 

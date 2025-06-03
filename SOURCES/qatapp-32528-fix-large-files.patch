@@ -1,0 +1,63 @@
+From 906ff19a0bc4d770d0d8cd484bdce8d5fbb1843f Mon Sep 17 00:00:00 2001
+From: Xinghong Chen <xinghong.chen@intel.com>
+Date: Wed, 31 Jul 2024 22:57:09 -0400
+Subject: [PATCH] QATAPP-32528: Fixed the qzip decompress large file issue
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Content-type: text/plain
+
+* The “bytes_processed” only updated when “DATA_ERROR/BUF_ERROR”
+happened. It’s OK if during each “src buffer”, it would run into
+“DATA_ERROR/BUF_ERROR” (This is the majority of cases, for 512M
+src buffer, it almost always have “incomplete source buffer”
+return). It’s also ok, if for each “src buffer”, it never run into
+“DATA_ERROR/BUF_ERROR”, so it wouldn’t call “fseek”,
+then bytes_processed is useless. But, if we mix those tow scenarios,
+For some “src buffer” run into “DATA_ERROR/BUF_ERROR” and
+others don’t. Then “bytes_processed” will miss some process
+source for which complete decompression without error issue.
+It cause the “fseek” set to incorrect file stream position.
+
+Signed-off-by: Xinghong Chen <xinghong.chen@intel.com>
+Signed-off-by: David Qian <david.qian@intel.com>
+Signed-off-by: Vladis Dronov <vdronov@redhat.com>
+---
+ utils/qzip.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/utils/qzip.c b/utils/qzip.c
+index bd69858..63d3702 100644
+--- a/utils/qzip.c
++++ b/utils/qzip.c
+@@ -255,7 +255,8 @@ void doProcessFile(QzSession_T *sess, const char *src_file_name,
+     FILE *src_file = NULL;
+     FILE *dst_file = NULL;
+     unsigned int bytes_read = 0;
+-    unsigned long bytes_processed = 0;
++    unsigned int bytes_lookahead = 0;
++    long offset_revert = 0;
+     unsigned int ratio_idx = 0;
+     const unsigned int ratio_limit =
+         sizeof(g_bufsz_expansion_ratio) / sizeof(unsigned int);
+@@ -326,14 +327,15 @@ void doProcessFile(QzSession_T *sess, const char *src_file_name,
+ 
+         puts((is_compress) ? "Compressing..." : "Decompressing...");
+ 
++        bytes_lookahead = bytes_read;
+         ret = doProcessBuffer(sess, src_buffer, &bytes_read, dst_buffer,
+                               dst_buffer_size, time_list_head, dst_file,
+                               &dst_file_size, is_compress);
+ 
+         if (QZ_DATA_ERROR == ret || QZ_BUF_ERROR == ret) {
+-            bytes_processed += bytes_read;
+             if (0 != bytes_read) {
+-                if (-1 == fseek(src_file, bytes_processed, SEEK_SET)) {
++                offset_revert = (long)bytes_read - (long)bytes_lookahead;
++                if (-1 == fseek(src_file, offset_revert, SEEK_CUR)) {
+                     ret = ERROR;
+                     goto exit;
+                 }
+-- 
+2.49.0
+
