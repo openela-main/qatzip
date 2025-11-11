@@ -4,7 +4,7 @@
 %global libqatzip_soversion 3
 
 Name:           qatzip
-Version:        1.2.0
+Version:        1.3.1
 Release:        1%{?dist}
 Summary:        Intel QuickAssist Technology (QAT) QATzip Library
 License:        BSD-3-Clause
@@ -14,7 +14,7 @@ Source0:        %{url}/archive/%{version}/%{name}-%{version}.tar.gz
 BuildRequires:  gcc >= 4.8.5
 BuildRequires:  zlib-devel >= 1.2.7
 BuildRequires:  qatlib-devel >= 23.08.0
-BuildRequires:  autoconf automake libtool make lz4-devel
+BuildRequires:  autoconf automake libtool make lz4-devel numactl-devel
 # The purpose of the package is to support hardware that only exists on x86_64 platforms
 # https://bugzilla.redhat.com/show_bug.cgi?id=1987280
 ExclusiveArch:  x86_64
@@ -87,8 +87,16 @@ rm -vf %{buildroot}%{_mandir}/*.pdf
 %{_libdir}/pkgconfig/*.pc
 
 %changelog
-* Fri Jun 14 2024 Vladis Dronov <vdronov@redhat.com> - 1.2.0-1
-- Update to qatzip v1.2.0 (RHEL-41077)
+* Tue Apr 29 2025 Vladis Dronov <vdronov@redhat.com> - 1.3.1-1
+- Update to qatzip 1.3.1 @ 10dbadba (RHEL-73091, RHEL-50460)
+- Fix qatzip docker file build broken issue
+- Support Latency sensitive mode for qatzip
+- Add a suit of comp/decomp API to support Async offloading
+- Support zlib format and end of stream flag
+- Fix some bugs
+
+* Fri Mar 22 2024 Vladis Dronov <vdronov@redhat.com> - 1.2.0-1
+- Update to qatzip v1.2.0 (RHEL-20180)
 - Add qatzip-test tool
 - SW fallback
 - Fix some bugs
